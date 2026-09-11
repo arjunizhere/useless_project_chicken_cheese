@@ -3,12 +3,200 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Evil IDE</title>
+
+    <link rel="stylesheet" href="/src/style.css">
 </head>
 
 <body>
-    <div id="editor"></div>
 
-    <script type="module" src="/src/main.js"></script>
+<div class="ide-window">
+
+    <!-- =========================
+         TOP APPLICATION BAR
+    ========================== -->
+
+    <div class="top-bar">
+
+        <div class="open-section">
+
+            <button class="open-button" id="openButton">
+                Open
+                <span class="dropdown-arrow">▼</span>
+            </button>
+
+            <div class="open-menu" id="openMenu">
+
+                <div class="menu-item" id="menuOpenFile">
+                    Open File
+                </div>
+
+                <div class="menu-item" id="menuOpenFolder">
+                    Open Folder
+                </div>
+
+                <div class="menu-item" id="menuNewFile">
+                    New File
+                </div>
+
+            </div>
+
+        </div>
+
+        <button class="window-close" id="windowClose" title="Close Window">
+            ×
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         TAB BAR
+    ========================== -->
+
+    <div class="tab-bar" id="tabBar">
+
+        <div class="tab active"
+             data-file="main.py"
+             data-language="Python">
+
+            <span class="file-icon python-icon">
+                ●
+            </span>
+
+            <span class="tab-name">
+                main.py
+            </span>
+
+            <button class="tab-close" title="Close tab">
+                ×
+            </button>
+
+        </div>
+
+
+        <div class="tab"
+             data-file="test.py"
+             data-language="Python">
+
+            <span class="file-icon python-icon">
+                ●
+            </span>
+
+            <span class="tab-name">
+                test.py
+            </span>
+
+            <button class="tab-close" title="Close tab">
+                ×
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         CURRENT FILE BAR
+    ========================== -->
+
+    <div class="current-file-bar">
+
+        <div class="current-file-left">
+
+            <span class="file-icon python-icon" id="currentFileIcon">
+                ●
+            </span>
+
+            <span id="currentFileName">
+                main.py
+            </span>
+
+        </div>
+
+        <div class="current-file-right">
+
+            <span id="currentLanguage">
+                Python
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         EDITOR
+    ========================== -->
+
+    <div class="editor-container">
+
+        <div class="editor-area" id="editorArea">
+            <div id="editor"></div>
+        </div>
+
+
+        <!-- =========================
+             SCROLLBAR
+        ========================== -->
+
+        <div class="editor-scrollbar" id="editorScrollbar">
+
+            <div class="scroll-thumb" id="scrollThumb"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         STATUS BAR
+    ========================== -->
+
+    <div class="status-bar">
+
+        <div class="status-left">
+
+            <span id="statusMessage">
+                Ready
+            </span>
+
+        </div>
+
+        <div class="status-right">
+
+            <span id="lineStatus">
+                Ln 1
+            </span>
+
+            <span id="columnStatus">
+                Col 1
+            </span>
+
+            <span>
+                Spaces: 4
+            </span>
+
+            <span>
+                UTF-8
+            </span>
+
+            <span id="languageStatus">
+                Python
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Hidden inputs for file/folder loading -->
+<input type="file" id="fileInput" style="display: none;">
+<input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+
+<script type="module" src="/src/main.js"></script>
+
 </body>
 </html>

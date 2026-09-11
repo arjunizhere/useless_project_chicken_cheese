@@ -1,12 +1,450 @@
-html,
+/* =========================
+   GLOBAL
+========================= */
+
+* {
+    box-sizing: border-box;
+}
+
 body {
     margin: 0;
-    width: 100%;
+
+    min-height: 100vh;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background: #f7f7f7;
+
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* =========================
+   IDE WINDOW
+========================= */
+
+.ide-window {
+    width: 96vw;
+    height: 94vh;
+
+    min-width: 700px;
+    min-height: 450px;
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border-radius: 4px;
+
+    background: #3bb0ed;
+
+    box-shadow:
+        0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+
+/* =========================
+   TOP BAR
+========================= */
+
+.top-bar {
+    height: 32px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 6px 0 10px;
+
+    background: #ffc45b;
+}
+
+
+/* =========================
+   OPEN BUTTON
+========================= */
+
+.open-section {
+    position: relative;
+}
+
+.open-button {
+    height: 24px;
+
+    padding: 0 10px;
+
+    border: none;
+    border-radius: 5px;
+
+    background: #ffd85c;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+.open-button:hover {
+    background: #ffe16f;
+}
+
+.dropdown-arrow {
+    margin-left: 7px;
+
+    font-size: 9px;
+}
+
+
+/* =========================
+   OPEN MENU
+========================= */
+
+.open-menu {
+    position: absolute;
+
+    top: 29px;
+    left: 0;
+
+    width: 140px;
+
+    display: none;
+
+    padding: 5px;
+
+    background: white;
+
+    border-radius: 4px;
+
+    box-shadow:
+        0 5px 15px rgba(0, 0, 0, 0.2);
+
+    z-index: 100;
+}
+
+.open-menu.show {
+    display: block;
+}
+
+.menu-item {
+    padding: 8px 10px;
+
+    font-size: 13px;
+
+    cursor: pointer;
+
+    border-radius: 3px;
+}
+
+.menu-item:hover {
+    background: #eeeeee;
+}
+
+
+/* =========================
+   WINDOW CLOSE
+========================= */
+
+.window-close {
+    width: 25px;
+    height: 25px;
+
+    border: none;
+
+    background: transparent;
+
+    font-size: 24px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.window-close:hover {
+    transform: scale(1.1);
+}
+
+
+/* =========================
+   TAB BAR
+========================= */
+
+.tab-bar {
+    height: 28px;
+
+    flex-shrink: 0;
+
+    display: flex;
+
+    background: #ffd52e;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.tab-bar::-webkit-scrollbar {
+    display: none;
+}
+
+
+/* =========================
+   TAB
+========================= */
+
+.tab {
+    height: 28px;
+
+    min-width: 220px;
+
+    display: flex;
+    align-items: center;
+
+    padding-left: 10px;
+    padding-right: 5px;
+
+    background: #ffd75a;
+
+    border-right: 2px solid #e6b900;
+
+    font-size: 13px;
+
+    cursor: pointer;
+    user-select: none;
+}
+
+.tab.active {
+    background: #ffd52e;
+}
+
+.tab:hover {
+    background: #ffdc69;
+}
+
+
+/* =========================
+   FILE ICON
+========================= */
+
+.file-icon {
+    margin-right: 7px;
+
+    font-size: 9px;
+}
+
+.python-icon {
+    color: #111;
+}
+
+.js-icon {
+    color: #b8860b;
+}
+
+.html-icon {
+    color: #c44d18;
+}
+
+.css-icon {
+    color: #1a62af;
+}
+
+.c-icon {
+    color: #444444;
+}
+
+
+/* =========================
+   TAB NAME
+========================= */
+
+.tab-name {
+    flex: 1;
+
+    overflow: hidden;
+
+    white-space: nowrap;
+
+    text-overflow: ellipsis;
+}
+
+
+/* =========================
+   TAB CLOSE
+========================= */
+
+.tab-close {
+    width: 22px;
+    height: 22px;
+
+    border: none;
+
+    background: transparent;
+
+    font-size: 20px;
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+.tab-close:hover {
+    transform: scale(1.15);
+}
+
+
+/* =========================
+   CURRENT FILE BAR
+========================= */
+
+.current-file-bar {
+    height: 28px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 12px;
+
+    background: #48b6ee;
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+
+    font-size: 12px;
+}
+
+
+/* LEFT SIDE */
+
+.current-file-left {
+    display: flex;
+    align-items: center;
+}
+
+
+/* RIGHT SIDE */
+
+.current-file-right {
+    opacity: 0.7;
+}
+
+
+/* =========================
+   EDITOR CONTAINER
+========================= */
+
+.editor-container {
+    flex: 1;
+
+    min-height: 0;
+
+    display: flex;
+
+    background: #3bb0ed;
+    position: relative;
+}
+
+
+/* =========================
+   EDITOR AREA
+========================= */
+
+.editor-area {
+    flex: 1;
+
+    min-width: 0;
     height: 100%;
+
+    position: relative;
     overflow: hidden;
 }
 
 #editor {
     width: 100%;
     height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
+
+
+/* =========================
+   SCROLLBAR
+========================= */
+
+.editor-scrollbar {
+    width: 15px;
+
+    flex-shrink: 0;
+
+    padding: 6px 3px;
+
+    background: #ffc829;
+    position: relative;
+    cursor: pointer;
+}
+
+.scroll-thumb {
+    width: 9px;
+
+    height: 120px;
+
+    border-radius: 5px;
+
+    background: #555;
+
+    cursor: grab;
+    user-select: none;
+}
+
+.scroll-thumb:hover {
+    background: #444;
+}
+
+.scroll-thumb:active {
+    cursor: grabbing;
+    background: #222;
+}
+
+
+/* =========================
+   STATUS BAR
+========================= */
+
+.status-bar {
+    height: 25px;
+
+    flex-shrink: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 0 10px;
+
+    background: #ffc45b;
+
+    font-size: 11px;
+}
+
+
+/* =========================
+   STATUS RIGHT
+========================= */
+
+.status-right {
+    display: flex;
+
+    gap: 18px;
+}
+
+/* Monaco Customization for Evil IDE */
+.monaco-editor {
+    font-family: Consolas, "Courier New", monospace !important;
+}
+
+.monaco-editor .margin {
+    background-color: #3bb0ed !important;
+}
