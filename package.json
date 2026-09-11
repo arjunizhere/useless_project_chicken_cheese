@@ -1,0 +1,11 @@
+{
+  "name": "useless-project-chicken-cheese",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm --prefix vite-project run dev",
+    "build": "npm --prefix vite-project run build",
+    "backend": "npm --prefix vite-project run backend",
+    "preview": "npm --prefix vite-project run preview"
+  }
+}
