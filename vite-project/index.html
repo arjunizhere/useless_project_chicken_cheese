@@ -3,12 +3,205 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Evil IDE</title>
+
+    <link rel="stylesheet" href="/src/style.css">
 </head>
 
 <body>
-    <div id="editor"></div>
 
-    <script type="module" src="/src/main.js"></script>
+<div class="ide-window">
+
+    <!-- =========================
+         TOP APPLICATION BAR
+    ========================== -->
+
+    <div class="top-bar">
+
+        <div class="top-bar-left">
+
+            <div class="open-section">
+
+                <button class="open-button" id="openButton">
+                    Open
+                    <span class="dropdown-arrow">▼</span>
+                </button>
+
+                <div class="open-menu" id="openMenu">
+
+                    <div class="menu-item" id="menuNewFile">
+                        New File
+                    </div>
+
+                    <div class="menu-item" id="menuOpenFile">
+                        Open File
+                    </div>
+
+                    <div class="menu-item" id="menuOpenFolder">
+                        Open Folder
+                    </div>
+
+                    <div class="menu-item" id="menuSaveFile">
+                        Save File
+                    </div>
+
+                </div>
+
+            </div>
+
+            <button class="save-button" id="saveButton" title="Save current file (Ctrl+S)">
+                Save
+            </button>
+
+        </div>
+
+        <button class="window-close" id="windowClose" title="Close Window">
+            ×
+        </button>
+
+    </div>
+
+
+    <!-- =========================
+         TAB BAR
+    ========================== -->
+
+    <div class="tab-bar" id="tabBar">
+        <!-- Tabs generated dynamically -->
+    </div>
+
+
+    <!-- =========================
+         CURRENT FILE BAR
+    ========================== -->
+
+    <div class="current-file-bar">
+
+        <div class="current-file-left">
+
+            <span class="file-icon" id="currentFileIcon">
+                ●
+            </span>
+
+            <span id="currentFileName">
+                Untitled Document 1
+            </span>
+
+        </div>
+
+        <div class="current-file-right">
+
+            <span id="currentLanguage" class="clickable-language" title="Click to change language">
+                Plain Text
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         EDITOR
+    ========================== -->
+
+    <div class="editor-container">
+
+        <div class="editor-area" id="editorArea">
+            <div id="editor"></div>
+            <div class="empty-editor-overlay" id="emptyEditorOverlay">
+                <div class="empty-editor-content">
+                    <div class="empty-editor-title">No Open Files</div>
+                    <div class="empty-editor-subtitle">Open an existing file or create a new document</div>
+                    <button class="empty-editor-btn" id="emptyNewBtn">New File (Ctrl+N)</button>
+                    <button class="empty-editor-btn" id="emptyOpenBtn">Open File (Ctrl+O)</button>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- =========================
+             SCROLLBAR
+        ========================== -->
+
+        <div class="editor-scrollbar" id="editorScrollbar">
+
+            <div class="scroll-thumb" id="scrollThumb"></div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         STATUS BAR
+    ========================== -->
+
+    <div class="status-bar">
+
+        <div class="status-left">
+
+            <span id="statusMessage">
+                Ready
+            </span>
+
+        </div>
+
+        <div class="status-right">
+
+            <span id="lineStatus">
+                Ln 1
+            </span>
+
+            <span id="columnStatus">
+                Col 1
+            </span>
+
+            <span>
+                Spaces: 4
+            </span>
+
+            <span>
+                UTF-8
+            </span>
+
+            <span id="languageStatus" class="clickable-language" title="Click to change language">
+                Plain Text
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- Closed Window Screen Overlay -->
+<div class="closed-overlay" id="closedOverlay" style="display: none;">
+    <div class="closed-card">
+        <h2>Evil IDE is Closed</h2>
+        <p>The IDE window was closed. Click below to reopen.</p>
+        <button id="reopenButton" class="reopen-button">Reopen Evil IDE</button>
+    </div>
+</div>
+
+<!-- Unsaved Changes Confirmation Modal -->
+<div class="confirm-dialog-overlay" id="saveConfirmOverlay" style="display: none;">
+    <div class="confirm-dialog-card">
+        <div class="confirm-dialog-title">Save Changes?</div>
+        <div class="confirm-dialog-msg" id="saveConfirmMsg">Your changes will be lost if you don't save them.</div>
+        <div class="confirm-dialog-actions">
+            <button class="confirm-btn save-btn" id="confirmSaveBtn">Save</button>
+            <button class="confirm-btn discard-btn" id="confirmDiscardBtn">Don't Save</button>
+            <button class="confirm-btn cancel-btn" id="confirmCancelBtn">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden inputs for file/folder loading -->
+<input type="file" id="fileInput" style="display: none;">
+<input type="file" id="folderInput" webkitdirectory directory multiple style="display: none;">
+
+<script type="module" src="/src/main.js"></script>
+
 </body>
 </html>
