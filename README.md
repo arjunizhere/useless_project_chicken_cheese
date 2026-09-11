@@ -6,13 +6,12 @@
 
 
 ## Basic Details
-### Team Name: [Name]
+### Team Name: Chicken Cheese Special Burger
 
 
 ### Team Members
-- Team Lead: [Name] - [College]
-- Member 2: [Name] - [College]
-- Member 3: [Name] - [College]
+- Team Lead: Visakh Anurag - TKM College of Engineering
+- Member 2: Arjun Krishna - TKM College of Engineering
 
 ### Project Description
 [2-3 lines about what your project does]
