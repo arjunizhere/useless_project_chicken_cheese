@@ -16,7 +16,13 @@ monaco.editor.defineTheme("evilTheme", {
         { token: "type", foreground: "0b3c5d", fontStyle: "bold" },
         { token: "function", foreground: "18206f" },
         { token: "identifier", foreground: "111111" },
-        { token: "delimiter", foreground: "222222" }
+        { token: "delimiter", foreground: "222222" },
+        { token: "tag", foreground: "8a104e", fontStyle: "bold" },
+        { token: "attribute.name", foreground: "18206f" },
+        { token: "attribute.value", foreground: "005520" },
+        { token: "meta.tag", foreground: "222222" },
+        { token: "constant", foreground: "8a1212" },
+        { token: "variable", foreground: "0b3c5d" }
     ],
     colors: {
         "editor.background": "#3bb0ed",
@@ -36,6 +42,13 @@ monaco.editor.defineTheme("evilTheme", {
 /* ========================================================
    DOM ELEMENTS
 ======================================================== */
+const ideWindow = document.querySelector(".ide-window");
+const closedOverlay = document.getElementById("closedOverlay");
+const reopenButton = document.getElementById("reopenButton");
+const emptyEditorOverlay = document.getElementById("emptyEditorOverlay");
+const emptyNewBtn = document.getElementById("emptyNewBtn");
+const emptyOpenBtn = document.getElementById("emptyOpenBtn");
+
 const openButton = document.getElementById("openButton");
 const openMenu = document.getElementById("openMenu");
 const menuOpenFile = document.getElementById("menuOpenFile");
@@ -82,35 +95,103 @@ const editor = monaco.editor.create(editorElement, {
 });
 
 /* ========================================================
-   FILE & LANGUAGE MANAGEMENT
+   FILE & LANGUAGE MANAGEMENT (ALL LANGUAGES)
 ======================================================== */
 const files = new Map();
 
+const EXTENSION_MAP = {
+    // Web & Scripts
+    py: { id: "python", name: "Python", iconClass: "python-icon" },
+    pyw: { id: "python", name: "Python", iconClass: "python-icon" },
+    js: { id: "javascript", name: "JavaScript", iconClass: "js-icon" },
+    mjs: { id: "javascript", name: "JavaScript", iconClass: "js-icon" },
+    cjs: { id: "javascript", name: "JavaScript", iconClass: "js-icon" },
+    jsx: { id: "javascript", name: "JavaScript React", iconClass: "js-icon" },
+    ts: { id: "typescript", name: "TypeScript", iconClass: "js-icon" },
+    tsx: { id: "typescript", name: "TypeScript React", iconClass: "js-icon" },
+    html: { id: "html", name: "HTML", iconClass: "html-icon" },
+    htm: { id: "html", name: "HTML", iconClass: "html-icon" },
+    css: { id: "css", name: "CSS", iconClass: "css-icon" },
+    scss: { id: "scss", name: "SCSS", iconClass: "css-icon" },
+    less: { id: "less", name: "LESS", iconClass: "css-icon" },
+    json: { id: "json", name: "JSON", iconClass: "js-icon" },
+
+    // Systems & Native Languages
+    c: { id: "c", name: "C", iconClass: "c-icon" },
+    h: { id: "c", name: "C Header", iconClass: "c-icon" },
+    cpp: { id: "cpp", name: "C++", iconClass: "c-icon" },
+    cc: { id: "cpp", name: "C++", iconClass: "c-icon" },
+    cxx: { id: "cpp", name: "C++", iconClass: "c-icon" },
+    hpp: { id: "cpp", name: "C++ Header", iconClass: "c-icon" },
+    hh: { id: "cpp", name: "C++ Header", iconClass: "c-icon" },
+    java: { id: "java", name: "Java", iconClass: "c-icon" },
+    cs: { id: "csharp", name: "C#", iconClass: "c-icon" },
+    go: { id: "go", name: "Go", iconClass: "c-icon" },
+    rs: { id: "rust", name: "Rust", iconClass: "c-icon" },
+    php: { id: "php", name: "PHP", iconClass: "js-icon" },
+    rb: { id: "ruby", name: "Ruby", iconClass: "python-icon" },
+    swift: { id: "swift", name: "Swift", iconClass: "c-icon" },
+    kt: { id: "kotlin", name: "Kotlin", iconClass: "c-icon" },
+    sql: { id: "sql", name: "SQL", iconClass: "c-icon" },
+    dart: { id: "dart", name: "Dart", iconClass: "c-icon" },
+    r: { id: "r", name: "R", iconClass: "python-icon" },
+    lua: { id: "lua", name: "Lua", iconClass: "c-icon" },
+
+    // Scripts & Config
+    sh: { id: "shell", name: "Shell Script", iconClass: "plaintext-icon" },
+    bash: { id: "shell", name: "Bash", iconClass: "plaintext-icon" },
+    zsh: { id: "shell", name: "Zsh", iconClass: "plaintext-icon" },
+    bat: { id: "bat", name: "Batch", iconClass: "plaintext-icon" },
+    cmd: { id: "bat", name: "Batch", iconClass: "plaintext-icon" },
+    ps1: { id: "powershell", name: "PowerShell", iconClass: "plaintext-icon" },
+    xml: { id: "xml", name: "XML", iconClass: "html-icon" },
+    svg: { id: "xml", name: "SVG", iconClass: "html-icon" },
+    yaml: { id: "yaml", name: "YAML", iconClass: "plaintext-icon" },
+    yml: { id: "yaml", name: "YAML", iconClass: "plaintext-icon" },
+    md: { id: "markdown", name: "Markdown", iconClass: "plaintext-icon" },
+    markdown: { id: "markdown", name: "Markdown", iconClass: "plaintext-icon" },
+    txt: { id: "plaintext", name: "Plain Text", iconClass: "plaintext-icon" },
+    log: { id: "plaintext", name: "Log File", iconClass: "plaintext-icon" },
+    ini: { id: "ini", name: "INI", iconClass: "plaintext-icon" },
+    dockerfile: { id: "dockerfile", name: "Dockerfile", iconClass: "plaintext-icon" }
+};
+
 function getLanguageInfo(fileName) {
-    const ext = fileName.split(".").pop().toLowerCase();
-    switch (ext) {
-        case "py":
-            return { id: "python", name: "Python", iconClass: "python-icon" };
-        case "js":
-        case "mjs":
-            return { id: "javascript", name: "JavaScript", iconClass: "js-icon" };
-        case "ts":
-            return { id: "typescript", name: "TypeScript", iconClass: "js-icon" };
-        case "html":
-            return { id: "html", name: "HTML", iconClass: "html-icon" };
-        case "css":
-            return { id: "css", name: "CSS", iconClass: "css-icon" };
-        case "json":
-            return { id: "json", name: "JSON", iconClass: "js-icon" };
-        case "c":
-        case "h":
-            return { id: "c", name: "C", iconClass: "c-icon" };
-        case "cpp":
-        case "cc":
-            return { id: "cpp", name: "C++", iconClass: "c-icon" };
-        default:
-            return { id: "plaintext", name: "Plain Text", iconClass: "python-icon" };
+    const ext = fileName.includes(".") ? fileName.split(".").pop().toLowerCase() : "";
+    if (EXTENSION_MAP[ext]) {
+        return EXTENSION_MAP[ext];
     }
+
+    // Dynamic fallback to Monaco's full language registry
+    const dotExt = "." + ext;
+    const allLangs = monaco.languages.getLanguages();
+    const matched = allLangs.find((lang) => lang.extensions && lang.extensions.includes(dotExt));
+    if (matched) {
+        const name = (matched.aliases && matched.aliases[0]) || matched.id;
+        return {
+            id: matched.id,
+            name: name.charAt(0).toUpperCase() + name.slice(1),
+            iconClass: "c-icon"
+        };
+    }
+
+    return { id: "plaintext", name: "Plain Text", iconClass: "plaintext-icon" };
+}
+
+let untitledCount = 1;
+
+function createNewFileDialog() {
+    const defaultName = `Untitled Document ${untitledCount++}`;
+    const name = prompt("Enter file name (e.g. app.py, main.c, script.js, index.html, notes.txt):", defaultName);
+    if (name === null) return; // User cancelled
+
+    const finalName = name.trim() || defaultName;
+    openOrCreateFile(finalName, "", null);
+}
+
+function createUntitledFile() {
+    const fileName = `Untitled Document ${untitledCount++}`;
+    openOrCreateFile(fileName, "", "Plain Text");
 }
 
 /* ========================================================
@@ -133,11 +214,18 @@ function activateTab(tab) {
     currentLanguage.textContent = language;
     languageStatus.textContent = language;
 
-    if (currentFileIcon && fileItem) {
-        currentFileIcon.className = `file-icon ${fileItem.langInfo.iconClass}`;
+    if (currentFileIcon) {
+        currentFileIcon.style.display = "";
+        if (fileItem) {
+            currentFileIcon.className = `file-icon ${fileItem.langInfo.iconClass}`;
+        }
     }
 
     statusMessage.textContent = "Editing " + fileName;
+
+    if (emptyEditorOverlay) {
+        emptyEditorOverlay.style.display = "none";
+    }
 
     if (fileItem && fileItem.model) {
         editor.setModel(fileItem.model);
@@ -167,23 +255,32 @@ function attachTabEvents(tab) {
                 files.delete(fileName);
             }
 
+            const wasActive = tab.classList.contains("active");
             tab.remove();
             statusMessage.textContent = fileName + " closed";
 
-            if (tab.classList.contains("active")) {
-                const remainingTabs = document.querySelectorAll(".tab");
-                if (remainingTabs.length > 0) {
-                    activateTab(remainingTabs[0]);
-                } else {
-                    currentFileName.textContent = "No file open";
-                    currentLanguage.textContent = "";
-                    languageStatus.textContent = "";
-                    statusMessage.textContent = "No file open";
+            const remainingTabs = document.querySelectorAll(".tab");
+            if (remainingTabs.length > 0) {
+                if (wasActive) {
+                    activateTab(remainingTabs[remainingTabs.length - 1]);
+                }
+            } else {
+                // Bug fix 2: When closing the last tab, close it cleanly without opening a new file!
+                currentFileName.textContent = "No file open";
+                currentLanguage.textContent = "";
+                languageStatus.textContent = "";
+                statusMessage.textContent = "No file open";
+                if (currentFileIcon) currentFileIcon.style.display = "none";
+                if (lineStatus) lineStatus.textContent = "-";
+                if (columnStatus) columnStatus.textContent = "-";
 
-                    const emptyModel = monaco.editor.createModel("", "plaintext");
-                    editor.setModel(emptyModel);
-                    editor.updateOptions({ readOnly: true });
-                    updateScrollThumb();
+                const emptyModel = monaco.editor.createModel("", "plaintext");
+                editor.setModel(emptyModel);
+                editor.updateOptions({ readOnly: true });
+                updateScrollThumb();
+
+                if (emptyEditorOverlay) {
+                    emptyEditorOverlay.style.display = "flex";
                 }
             }
         });
@@ -200,7 +297,9 @@ function openOrCreateFile(fileName, content, languageOverride) {
     }
 
     const langInfo = languageOverride
-        ? { id: languageOverride.toLowerCase(), name: languageOverride, iconClass: "python-icon" }
+        ? (languageOverride === "Plain Text"
+            ? { id: "plaintext", name: "Plain Text", iconClass: "plaintext-icon" }
+            : { id: languageOverride.toLowerCase(), name: languageOverride, iconClass: "c-icon" })
         : getLanguageInfo(fileName);
 
     const model = monaco.editor.createModel(content, langInfo.id);
@@ -223,42 +322,9 @@ function openOrCreateFile(fileName, content, languageOverride) {
 }
 
 /* ========================================================
-   INITIALIZE STARTER TABS & MODELS
+   INITIALIZE DEFAULT DOCUMENT (LIKE GEDIT)
 ======================================================== */
-const initialMainPyContent = `print("Hello World")
-
-def main():
-    print("Evil IDE")
-
-if __name__ == "__main__":
-    main()
-`;
-
-const initialTestPyContent = `def test_evil():
-    print("Running evil unit tests...")
-    assert True, "Evil test passed!"
-
-if __name__ == "__main__":
-    test_evil()
-`;
-
-// Register initial models for existing HTML tabs
-const initialTabs = document.querySelectorAll(".tab");
-initialTabs.forEach(function (tab) {
-    const fileName = tab.dataset.file;
-    const langInfo = getLanguageInfo(fileName);
-    const content = fileName === "main.py" ? initialMainPyContent : initialTestPyContent;
-    const model = monaco.editor.createModel(content, langInfo.id);
-
-    files.set(fileName, { model, langInfo });
-    attachTabEvents(tab);
-});
-
-// Activate the first active tab
-const firstActiveTab = document.querySelector(".tab.active") || initialTabs[0];
-if (firstActiveTab) {
-    activateTab(firstActiveTab);
-}
+createUntitledFile();
 
 /* ========================================================
    OPEN MENU ACTIONS
@@ -275,10 +341,7 @@ document.addEventListener("click", function () {
 if (menuNewFile) {
     menuNewFile.addEventListener("click", function () {
         openMenu.classList.remove("show");
-        const name = prompt("Enter new file name:", "untitled.py");
-        if (name && name.trim()) {
-            openOrCreateFile(name.trim(), "", null);
-        }
+        createNewFileDialog();
     });
 }
 
@@ -323,11 +386,66 @@ folderInput.addEventListener("change", function (e) {
 });
 
 /* ========================================================
+   EMPTY STATE BUTTONS
+======================================================== */
+if (emptyNewBtn) {
+    emptyNewBtn.addEventListener("click", function () {
+        createNewFileDialog();
+    });
+}
+
+if (emptyOpenBtn) {
+    emptyOpenBtn.addEventListener("click", function () {
+        fileInput.value = "";
+        fileInput.click();
+    });
+}
+
+/* ========================================================
+   INTERACTIVE LANGUAGE SWITCHER
+======================================================== */
+function promptLanguageChange() {
+    const activeTab = document.querySelector(".tab.active");
+    if (!activeTab) return;
+
+    const fileName = activeTab.dataset.file;
+    const fileItem = files.get(fileName);
+    if (!fileItem) return;
+
+    const commonLanguages = "python, javascript, typescript, c, cpp, java, csharp, rust, go, html, css, json, sql, markdown, shell, plaintext";
+    const chosen = prompt(`Change language syntax for "${fileName}"\nOptions: ${commonLanguages}`, fileItem.langInfo.id);
+
+    if (!chosen || !chosen.trim()) return;
+
+    const target = chosen.trim().toLowerCase();
+    const langInfo = {
+        id: target === "plain text" ? "plaintext" : target,
+        name: target.charAt(0).toUpperCase() + target.slice(1),
+        iconClass: target === "python" ? "python-icon" : (target.includes("js") ? "js-icon" : "c-icon")
+    };
+
+    monaco.editor.setModelLanguage(fileItem.model, langInfo.id);
+    fileItem.langInfo = langInfo;
+    activeTab.dataset.language = langInfo.name;
+
+    currentLanguage.textContent = langInfo.name;
+    languageStatus.textContent = langInfo.name;
+    if (currentFileIcon) currentFileIcon.className = `file-icon ${langInfo.iconClass}`;
+    const tabIcon = activeTab.querySelector(".file-icon");
+    if (tabIcon) tabIcon.className = `file-icon ${langInfo.iconClass}`;
+
+    statusMessage.textContent = `Language switched to ${langInfo.name}`;
+}
+
+currentLanguage.addEventListener("click", promptLanguageChange);
+languageStatus.addEventListener("click", promptLanguageChange);
+
+/* ========================================================
    CURSOR & STATUS BAR
 ======================================================== */
 function updateCursorStatus() {
     const position = editor.getPosition();
-    if (position) {
+    if (position && files.size > 0) {
         lineStatus.textContent = `Ln ${position.lineNumber}`;
         columnStatus.textContent = `Col ${position.column}`;
     }
@@ -353,7 +471,7 @@ function updateScrollThumb() {
     const clientHeight = layoutInfo ? layoutInfo.height : editorArea.clientHeight;
     const maxScroll = scrollHeight - clientHeight;
 
-    if (maxScroll <= 0) {
+    if (maxScroll <= 0 || files.size === 0) {
         scrollThumb.style.transform = `translateY(0px)`;
         return;
     }
@@ -372,6 +490,7 @@ let startY = 0;
 let startScrollTop = 0;
 
 scrollThumb.addEventListener("mousedown", function (e) {
+    if (files.size === 0) return;
     isDragging = true;
     startY = e.clientY;
     startScrollTop = editor.getScrollTop();
@@ -398,6 +517,7 @@ document.addEventListener("mouseup", function () {
 });
 
 editorScrollbar.addEventListener("click", function (e) {
+    if (files.size === 0) return;
     if (e.target === scrollThumb) return;
     const rect = editorScrollbar.getBoundingClientRect();
     const clickY = e.clientY - rect.top - scrollThumb.offsetHeight / 2;
@@ -410,9 +530,44 @@ editorScrollbar.addEventListener("click", function (e) {
 });
 
 /* ========================================================
-   WINDOW CLOSE
+   WINDOW CLOSE & SHORTCUTS (BUG FIX 1)
 ======================================================== */
 windowClose.addEventListener("click", function () {
-    statusMessage.textContent = "Close requested... You cannot escape Evil IDE 😈";
-    console.log("Window close requested");
+    statusMessage.textContent = "Window closed";
+    if (ideWindow) ideWindow.style.display = "none";
+    if (closedOverlay) closedOverlay.style.display = "flex";
+    try {
+        window.close();
+    } catch (e) {
+        // Handled if browser blocks script window.close
+    }
+});
+
+if (reopenButton) {
+    reopenButton.addEventListener("click", function () {
+        if (closedOverlay) closedOverlay.style.display = "none";
+        if (ideWindow) ideWindow.style.display = "flex";
+        editor.layout();
+    });
+}
+
+// Default IDE Keyboard Shortcuts
+document.addEventListener("keydown", function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n") {
+        e.preventDefault();
+        createNewFileDialog();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") {
+        e.preventDefault();
+        if (fileInput) {
+            fileInput.value = "";
+            fileInput.click();
+        }
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "w") {
+        e.preventDefault();
+        const activeTab = document.querySelector(".tab.active");
+        if (activeTab) {
+            const closeBtn = activeTab.querySelector(".tab-close");
+            if (closeBtn) closeBtn.click();
+        }
+    }
 });

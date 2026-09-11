@@ -56,44 +56,7 @@
     ========================== -->
 
     <div class="tab-bar" id="tabBar">
-
-        <div class="tab active"
-             data-file="main.py"
-             data-language="Python">
-
-            <span class="file-icon python-icon">
-                ●
-            </span>
-
-            <span class="tab-name">
-                main.py
-            </span>
-
-            <button class="tab-close" title="Close tab">
-                ×
-            </button>
-
-        </div>
-
-
-        <div class="tab"
-             data-file="test.py"
-             data-language="Python">
-
-            <span class="file-icon python-icon">
-                ●
-            </span>
-
-            <span class="tab-name">
-                test.py
-            </span>
-
-            <button class="tab-close" title="Close tab">
-                ×
-            </button>
-
-        </div>
-
+        <!-- Tabs generated dynamically -->
     </div>
 
 
@@ -105,20 +68,20 @@
 
         <div class="current-file-left">
 
-            <span class="file-icon python-icon" id="currentFileIcon">
+            <span class="file-icon" id="currentFileIcon">
                 ●
             </span>
 
             <span id="currentFileName">
-                main.py
+                Untitled Document 1
             </span>
 
         </div>
 
         <div class="current-file-right">
 
-            <span id="currentLanguage">
-                Python
+            <span id="currentLanguage" class="clickable-language" title="Click to change language">
+                Plain Text
             </span>
 
         </div>
@@ -134,6 +97,14 @@
 
         <div class="editor-area" id="editorArea">
             <div id="editor"></div>
+            <div class="empty-editor-overlay" id="emptyEditorOverlay">
+                <div class="empty-editor-content">
+                    <div class="empty-editor-title">No Open Files</div>
+                    <div class="empty-editor-subtitle">Open an existing file or create a new document</div>
+                    <button class="empty-editor-btn" id="emptyNewBtn">New File (Ctrl+N)</button>
+                    <button class="empty-editor-btn" id="emptyOpenBtn">Open File (Ctrl+O)</button>
+                </div>
+            </div>
         </div>
 
 
@@ -182,14 +153,23 @@
                 UTF-8
             </span>
 
-            <span id="languageStatus">
-                Python
+            <span id="languageStatus" class="clickable-language" title="Click to change language">
+                Plain Text
             </span>
 
         </div>
 
     </div>
 
+</div>
+
+<!-- Closed Window Screen Overlay -->
+<div class="closed-overlay" id="closedOverlay" style="display: none;">
+    <div class="closed-card">
+        <h2>Evil IDE is Closed</h2>
+        <p>The IDE window was closed. Click below to reopen.</p>
+        <button id="reopenButton" class="reopen-button">Reopen Evil IDE</button>
+    </div>
 </div>
 
 <!-- Hidden inputs for file/folder loading -->
