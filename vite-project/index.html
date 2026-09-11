@@ -19,28 +19,40 @@
 
     <div class="top-bar">
 
-        <div class="open-section">
+        <div class="top-bar-left">
 
-            <button class="open-button" id="openButton">
-                Open
-                <span class="dropdown-arrow">▼</span>
-            </button>
+            <div class="open-section">
 
-            <div class="open-menu" id="openMenu">
+                <button class="open-button" id="openButton">
+                    Open
+                    <span class="dropdown-arrow">▼</span>
+                </button>
 
-                <div class="menu-item" id="menuOpenFile">
-                    Open File
-                </div>
+                <div class="open-menu" id="openMenu">
 
-                <div class="menu-item" id="menuOpenFolder">
-                    Open Folder
-                </div>
+                    <div class="menu-item" id="menuNewFile">
+                        New File
+                    </div>
 
-                <div class="menu-item" id="menuNewFile">
-                    New File
+                    <div class="menu-item" id="menuOpenFile">
+                        Open File
+                    </div>
+
+                    <div class="menu-item" id="menuOpenFolder">
+                        Open Folder
+                    </div>
+
+                    <div class="menu-item" id="menuSaveFile">
+                        Save File
+                    </div>
+
                 </div>
 
             </div>
+
+            <button class="save-button" id="saveButton" title="Save current file (Ctrl+S)">
+                Save
+            </button>
 
         </div>
 
@@ -169,6 +181,19 @@
         <h2>Evil IDE is Closed</h2>
         <p>The IDE window was closed. Click below to reopen.</p>
         <button id="reopenButton" class="reopen-button">Reopen Evil IDE</button>
+    </div>
+</div>
+
+<!-- Unsaved Changes Confirmation Modal -->
+<div class="confirm-dialog-overlay" id="saveConfirmOverlay" style="display: none;">
+    <div class="confirm-dialog-card">
+        <div class="confirm-dialog-title">Save Changes?</div>
+        <div class="confirm-dialog-msg" id="saveConfirmMsg">Your changes will be lost if you don't save them.</div>
+        <div class="confirm-dialog-actions">
+            <button class="confirm-btn save-btn" id="confirmSaveBtn">Save</button>
+            <button class="confirm-btn discard-btn" id="confirmDiscardBtn">Don't Save</button>
+            <button class="confirm-btn cancel-btn" id="confirmCancelBtn">Cancel</button>
+        </div>
     </div>
 </div>
 

@@ -65,6 +65,13 @@ body {
 }
 
 
+.top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+
 /* =========================
    OPEN BUTTON
 ========================= */
@@ -96,6 +103,38 @@ body {
     margin-left: 7px;
 
     font-size: 9px;
+}
+
+
+/* =========================
+   SAVE BUTTON
+========================= */
+
+.save-button {
+    height: 24px;
+
+    padding: 0 12px;
+
+    border: none;
+    border-radius: 5px;
+
+    background: #ffd85c;
+
+    font-size: 14px;
+
+    cursor: pointer;
+
+    font-family: inherit;
+
+    transition: background 0.15s;
+}
+
+.save-button:hover {
+    background: #ffe16f;
+}
+
+.save-button:active {
+    background: #e6b900;
 }
 
 
@@ -578,4 +617,113 @@ body {
 .clickable-language:hover {
     background: rgba(0, 0, 0, 0.1);
     text-decoration: underline;
+}
+
+/* =========================
+   DIRTY / UNSAVED TAB INDICATOR
+========================= */
+
+.dirty-dot {
+    display: none;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #d9534f;
+    margin-left: 6px;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
+.tab.is-dirty .dirty-dot {
+    display: inline-block;
+}
+
+/* =========================
+   CONFIRMATION MODAL
+========================= */
+
+.confirm-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(3px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.confirm-dialog-card {
+    background: #ffc45b;
+    border: 3px solid #e6b900;
+    border-radius: 8px;
+    padding: 24px;
+    width: 380px;
+    max-width: 90vw;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    text-align: left;
+}
+
+.confirm-dialog-title {
+    font-size: 17px;
+    font-weight: bold;
+    color: #111;
+    margin-bottom: 8px;
+}
+
+.confirm-dialog-msg {
+    font-size: 13px;
+    color: #222;
+    margin-bottom: 22px;
+    line-height: 1.45;
+}
+
+.confirm-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.confirm-btn {
+    height: 30px;
+    padding: 0 14px;
+    font-size: 12px;
+    font-weight: bold;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid rgba(0, 0, 0, 0.25);
+    transition: transform 0.1s, background 0.15s;
+}
+
+.confirm-btn:active {
+    transform: scale(0.97);
+}
+
+.confirm-btn.save-btn {
+    background: #ffd52e;
+    border-color: #c79a00;
+    color: #111;
+}
+
+.confirm-btn.save-btn:hover {
+    background: #ffe16f;
+}
+
+.confirm-btn.discard-btn {
+    background: #ffffff;
+    color: #b30000;
+    border-color: #e0b0b0;
+}
+
+.confirm-btn.discard-btn:hover {
+    background: #fff0f0;
+}
+
+.confirm-btn.cancel-btn {
+    background: #eaeaea;
+    color: #333;
+}
+
+.confirm-btn.cancel-btn:hover {
+    background: #dcdcdc;
 }

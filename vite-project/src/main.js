@@ -50,10 +50,12 @@ const emptyNewBtn = document.getElementById("emptyNewBtn");
 const emptyOpenBtn = document.getElementById("emptyOpenBtn");
 
 const openButton = document.getElementById("openButton");
+const saveButton = document.getElementById("saveButton");
 const openMenu = document.getElementById("openMenu");
 const menuOpenFile = document.getElementById("menuOpenFile");
 const menuOpenFolder = document.getElementById("menuOpenFolder");
 const menuNewFile = document.getElementById("menuNewFile");
+const menuSaveFile = document.getElementById("menuSaveFile");
 const fileInput = document.getElementById("fileInput");
 const folderInput = document.getElementById("folderInput");
 
@@ -235,6 +237,100 @@ function activateTab(tab) {
     }
 }
 
+/* ========================================================
+   UNSAVED CHANGES PROMPT & CLOSING
+======================================================== */
+function promptUnsavedChanges(fileName) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById("saveConfirmOverlay");
+        const msg = document.getElementById("saveConfirmMsg");
+        const btnSave = document.getElementById("confirmSaveBtn");
+        const btnDiscard = document.getElementById("confirmDiscardBtn");
+        const btnCancel = document.getElementById("confirmCancelBtn");
+
+        if (msg) {
+            msg.textContent = `Do you want to save changes to "${fileName}" before closing? Your changes will be lost if you don't save them.`;
+        }
+        if (overlay) {
+            overlay.style.display = "flex";
+        }
+
+        function cleanup(choice) {
+            if (overlay) overlay.style.display = "none";
+            if (btnSave) btnSave.onclick = null;
+            if (btnDiscard) btnDiscard.onclick = null;
+            if (btnCancel) btnCancel.onclick = null;
+            resolve(choice);
+        }
+
+        if (btnSave) btnSave.onclick = () => cleanup("save");
+        if (btnDiscard) btnDiscard.onclick = () => cleanup("discard");
+        if (btnCancel) btnCancel.onclick = () => cleanup("cancel");
+    });
+}
+
+async function requestCloseTab(tab) {
+    const fileName = tab.dataset.file;
+    const fileItem = files.get(fileName);
+
+    if (fileItem && fileItem.isDirty) {
+        activateTab(tab);
+        const choice = await promptUnsavedChanges(fileName);
+
+        if (choice === "cancel") {
+            return; // Abort closing
+        }
+
+        if (choice === "save") {
+            const saved = await saveCurrentFile();
+            if (!saved) {
+                return; // Save cancelled or failed, abort closing
+            }
+        }
+        // If choice === "discard" or save succeeded, proceed to close
+    }
+
+    performCloseTab(tab);
+}
+
+function performCloseTab(tab) {
+    const fileName = tab.dataset.file;
+    const fileItem = files.get(fileName);
+
+    if (fileItem && fileItem.model) {
+        fileItem.model.dispose();
+        files.delete(fileName);
+    }
+
+    const wasActive = tab.classList.contains("active");
+    tab.remove();
+    statusMessage.textContent = fileName + " closed";
+
+    const remainingTabs = document.querySelectorAll(".tab");
+    if (remainingTabs.length > 0) {
+        if (wasActive) {
+            activateTab(remainingTabs[remainingTabs.length - 1]);
+        }
+    } else {
+        currentFileName.textContent = "No file open";
+        currentLanguage.textContent = "";
+        languageStatus.textContent = "";
+        statusMessage.textContent = "No file open";
+        if (currentFileIcon) currentFileIcon.style.display = "none";
+        if (lineStatus) lineStatus.textContent = "-";
+        if (columnStatus) columnStatus.textContent = "-";
+
+        const emptyModel = monaco.editor.createModel("", "plaintext");
+        editor.setModel(emptyModel);
+        editor.updateOptions({ readOnly: true });
+        updateScrollThumb();
+
+        if (emptyEditorOverlay) {
+            emptyEditorOverlay.style.display = "flex";
+        }
+    }
+}
+
 function attachTabEvents(tab) {
     tab.addEventListener("click", function (event) {
         if (event.target.classList.contains("tab-close")) {
@@ -247,42 +343,7 @@ function attachTabEvents(tab) {
     if (closeButton) {
         closeButton.addEventListener("click", function (event) {
             event.stopPropagation();
-            const fileName = tab.dataset.file;
-            const fileItem = files.get(fileName);
-
-            if (fileItem && fileItem.model) {
-                fileItem.model.dispose();
-                files.delete(fileName);
-            }
-
-            const wasActive = tab.classList.contains("active");
-            tab.remove();
-            statusMessage.textContent = fileName + " closed";
-
-            const remainingTabs = document.querySelectorAll(".tab");
-            if (remainingTabs.length > 0) {
-                if (wasActive) {
-                    activateTab(remainingTabs[remainingTabs.length - 1]);
-                }
-            } else {
-                // Bug fix 2: When closing the last tab, close it cleanly without opening a new file!
-                currentFileName.textContent = "No file open";
-                currentLanguage.textContent = "";
-                languageStatus.textContent = "";
-                statusMessage.textContent = "No file open";
-                if (currentFileIcon) currentFileIcon.style.display = "none";
-                if (lineStatus) lineStatus.textContent = "-";
-                if (columnStatus) columnStatus.textContent = "-";
-
-                const emptyModel = monaco.editor.createModel("", "plaintext");
-                editor.setModel(emptyModel);
-                editor.updateOptions({ readOnly: true });
-                updateScrollThumb();
-
-                if (emptyEditorOverlay) {
-                    emptyEditorOverlay.style.display = "flex";
-                }
-            }
+            requestCloseTab(tab);
         });
     }
 }
@@ -303,7 +364,7 @@ function openOrCreateFile(fileName, content, languageOverride) {
         : getLanguageInfo(fileName);
 
     const model = monaco.editor.createModel(content, langInfo.id);
-    files.set(fileName, { model, langInfo });
+    files.set(fileName, { model, langInfo, savedContent: content, isDirty: false });
 
     const tab = document.createElement("div");
     tab.className = "tab";
@@ -313,6 +374,7 @@ function openOrCreateFile(fileName, content, languageOverride) {
     tab.innerHTML = `
         <span class="file-icon ${langInfo.iconClass}">●</span>
         <span class="tab-name">${fileName}</span>
+        <span class="dirty-dot" title="Unsaved changes"></span>
         <button class="tab-close" title="Close tab">×</button>
     `;
 
@@ -384,6 +446,143 @@ folderInput.addEventListener("change", function (e) {
         reader.readAsText(file);
     });
 });
+
+if (menuSaveFile) {
+    menuSaveFile.addEventListener("click", function () {
+        openMenu.classList.remove("show");
+        saveCurrentFile();
+    });
+}
+
+if (saveButton) {
+    saveButton.addEventListener("click", function () {
+        saveCurrentFile();
+    });
+}
+
+/* ========================================================
+   SAVE FEATURE (LOCAL STORAGE / FILE SYSTEM)
+======================================================== */
+async function saveCurrentFile() {
+    const activeTab = document.querySelector(".tab.active");
+    if (!activeTab) {
+        statusMessage.textContent = "No active file to save";
+        return;
+    }
+
+    let fileName = activeTab.dataset.file;
+    const fileItem = files.get(fileName);
+    if (!fileItem || !fileItem.model) {
+        statusMessage.textContent = "Cannot save empty file";
+        return;
+    }
+
+    const content = fileItem.model.getValue();
+
+    // If it's an untitled document without an extension, prompt for a filename
+    if (fileName.startsWith("Untitled Document") && !fileName.includes(".")) {
+        let defaultExt = ".txt";
+        const langId = fileItem.langInfo.id;
+        if (langId === "python") defaultExt = ".py";
+        else if (langId === "javascript") defaultExt = ".js";
+        else if (langId === "typescript") defaultExt = ".ts";
+        else if (langId === "c") defaultExt = ".c";
+        else if (langId === "cpp") defaultExt = ".cpp";
+        else if (langId === "html") defaultExt = ".html";
+        else if (langId === "css") defaultExt = ".css";
+        else if (langId === "json") defaultExt = ".json";
+        else if (langId === "java") defaultExt = ".java";
+
+        const suggested = prompt("Save As - Enter file name:", `script${defaultExt}`);
+        if (suggested === null) return; // User cancelled
+        if (suggested.trim()) {
+            const newName = suggested.trim();
+            files.delete(fileName);
+            fileName = newName;
+            const newLangInfo = getLanguageInfo(fileName);
+            fileItem.langInfo = newLangInfo;
+            files.set(fileName, fileItem);
+
+            monaco.editor.setModelLanguage(fileItem.model, newLangInfo.id);
+
+            activeTab.dataset.file = fileName;
+            activeTab.dataset.language = newLangInfo.name;
+            const tabNameSpan = activeTab.querySelector(".tab-name");
+            if (tabNameSpan) tabNameSpan.textContent = fileName;
+            const tabIcon = activeTab.querySelector(".file-icon");
+            if (tabIcon) tabIcon.className = `file-icon ${newLangInfo.iconClass}`;
+
+            currentFileName.textContent = fileName;
+            currentLanguage.textContent = newLangInfo.name;
+            languageStatus.textContent = newLangInfo.name;
+            if (currentFileIcon) currentFileIcon.className = `file-icon ${newLangInfo.iconClass}`;
+        }
+    }
+
+    // Try modern File System Access API if supported
+    if ("showSaveFilePicker" in window) {
+        try {
+            const handle = await window.showSaveFilePicker({
+                suggestedName: fileName
+            });
+            const writable = await handle.createWritable();
+            await writable.write(content);
+            await writable.close();
+
+            // If user saved under a different name in the OS dialog
+            if (handle.name && handle.name !== fileName) {
+                const newName = handle.name;
+                files.delete(fileName);
+                fileName = newName;
+                const newLangInfo = getLanguageInfo(fileName);
+                fileItem.langInfo = newLangInfo;
+                files.set(fileName, fileItem);
+
+                monaco.editor.setModelLanguage(fileItem.model, newLangInfo.id);
+
+                activeTab.dataset.file = fileName;
+                activeTab.dataset.language = newLangInfo.name;
+                const tabNameSpan = activeTab.querySelector(".tab-name");
+                if (tabNameSpan) tabNameSpan.textContent = fileName;
+                const tabIcon = activeTab.querySelector(".file-icon");
+                if (tabIcon) tabIcon.className = `file-icon ${newLangInfo.iconClass}`;
+
+                currentFileName.textContent = fileName;
+                currentLanguage.textContent = newLangInfo.name;
+                languageStatus.textContent = newLangInfo.name;
+                if (currentFileIcon) currentFileIcon.className = `file-icon ${newLangInfo.iconClass}`;
+            }
+
+            fileItem.savedContent = content;
+            fileItem.isDirty = false;
+            activeTab.classList.remove("is-dirty");
+            statusMessage.textContent = `Saved ${fileName} locally`;
+            return true;
+        } catch (err) {
+            if (err.name === "AbortError") {
+                return false; // User cancelled OS save dialog
+            }
+            console.warn("showSaveFilePicker fallback to download", err);
+        }
+    }
+
+    // Fallback: Browser file download
+    const blob = new Blob([content], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    fileItem.savedContent = content;
+    fileItem.isDirty = false;
+    activeTab.classList.remove("is-dirty");
+    statusMessage.textContent = `Saved ${fileName} locally`;
+    return true;
+}
 
 /* ========================================================
    EMPTY STATE BUTTONS
@@ -458,7 +657,20 @@ editor.onDidChangeCursorPosition(function () {
 editor.onDidChangeModelContent(function () {
     const activeTab = document.querySelector(".tab.active");
     if (activeTab) {
-        statusMessage.textContent = "Editing " + activeTab.dataset.file;
+        const fileName = activeTab.dataset.file;
+        const fileItem = files.get(fileName);
+        if (fileItem && fileItem.model) {
+            const currentVal = fileItem.model.getValue();
+            const isDirty = currentVal !== (fileItem.savedContent ?? "");
+            fileItem.isDirty = isDirty;
+            if (isDirty) {
+                activeTab.classList.add("is-dirty");
+                statusMessage.textContent = "Editing " + fileName + " (Unsaved)";
+            } else {
+                activeTab.classList.remove("is-dirty");
+                statusMessage.textContent = "Editing " + fileName;
+            }
+        }
     }
 });
 
@@ -530,9 +742,25 @@ editorScrollbar.addEventListener("click", function (e) {
 });
 
 /* ========================================================
-   WINDOW CLOSE & SHORTCUTS (BUG FIX 1)
+   WINDOW CLOSE & SHORTCUTS (WITH UNSAVED GUARD)
 ======================================================== */
-windowClose.addEventListener("click", function () {
+windowClose.addEventListener("click", async function () {
+    // Check if any tab has unsaved changes
+    for (const [name, item] of files.entries()) {
+        if (item.isDirty) {
+            const tab = Array.from(document.querySelectorAll(".tab")).find((t) => t.dataset.file === name);
+            if (tab) activateTab(tab);
+
+            const choice = await promptUnsavedChanges(name);
+            if (choice === "cancel") return; // Abort closing
+            if (choice === "save") {
+                const saved = await saveCurrentFile();
+                if (!saved) return; // Save cancelled, abort closing
+            }
+            // If discard, continue checking next or proceed
+        }
+    }
+
     statusMessage.textContent = "Window closed";
     if (ideWindow) ideWindow.style.display = "none";
     if (closedOverlay) closedOverlay.style.display = "flex";
@@ -551,9 +779,21 @@ if (reopenButton) {
     });
 }
 
+// Browser Tab Close Guard
+window.addEventListener("beforeunload", function (e) {
+    const hasUnsaved = Array.from(files.values()).some((f) => f.isDirty);
+    if (hasUnsaved) {
+        e.preventDefault();
+        e.returnValue = "";
+    }
+});
+
 // Default IDE Keyboard Shortcuts
 document.addEventListener("keydown", function (e) {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n") {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+        e.preventDefault();
+        saveCurrentFile();
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "n") {
         e.preventDefault();
         createNewFileDialog();
     } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "o") {
@@ -566,8 +806,7 @@ document.addEventListener("keydown", function (e) {
         e.preventDefault();
         const activeTab = document.querySelector(".tab.active");
         if (activeTab) {
-            const closeBtn = activeTab.querySelector(".tab-close");
-            if (closeBtn) closeBtn.click();
+            requestCloseTab(activeTab);
         }
     }
 });
