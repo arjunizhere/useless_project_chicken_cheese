@@ -72,6 +72,9 @@ PORT=3001
 *(Note: If no API key is supplied, Evil IDE seamlessly falls back to its built-in offline chaotic code transformer!)*
 
 #### Running the Project
+Click on the link hehe: https://useless-project-chicken-cheese.vercel.app
+
+##### Self-Hosting
 You can run both services from the **root folder**:
 
 ```bash
