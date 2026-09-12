@@ -123,7 +123,7 @@ flowchart TD
 
 ### Project Demo
 #### Video
-[Add your demo video link here (e.g. YouTube / Loom link)]
+[[Add your demo video link here (e.g. YouTube / Loom link)](https://drive.google.com/file/d/1nwsfHESpWnOjBZiLB4PmmTAx-fwkx4iM/view?usp=sharing)]
 *Video demonstration showing code sabotage, center mouse repulsion, auto-typing, and popup disturbances*
 
 #### Additional Demos
