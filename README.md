@@ -134,7 +134,7 @@ flowchart TD
 
 ## Team Contributions
 - **Visakh Anurag**: Backend architecture, Express server, Google Gemini integration, offline chaotic code transformation logic, and package configuration.
-- **Arjun Krishna**: Frontend GUI implementation, Monaco Editor integration, multi-language detection, file creation & local saving workflows, and UI theming.
+- **Arjun Krishna**: Frontend GUI implementation, Monaco Editor integration, multi-language detection, file creation & local saving workflows, UI theming and Documentation.
 
 ---
 Made with ❤️ at TinkerHub Useless Projects 
