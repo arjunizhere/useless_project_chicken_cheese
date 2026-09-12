@@ -72,7 +72,7 @@ PORT=3001
 *(Note: If no API key is supplied, Evil IDE seamlessly falls back to its built-in offline chaotic code transformer!)*
 
 #### Running the Project
-You can run both services from the root folder:
+You can run both services from the **root folder**:
 
 ```bash
 # Terminal 1: Start the Backend Server (Port 3001)
